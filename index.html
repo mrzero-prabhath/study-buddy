@@ -260,13 +260,25 @@
 
             } catch (error) {
 
-                console.error(
-                    "Firebase error:",
-                    error
-                );
+    console.error("Firebase error:", error);
 
-            }
+    document.getElementById("videoContainer").insertAdjacentHTML(
+        "beforeend",
+        `
+        <div style="
+            background:#fee2e2;
+            color:#991b1b;
+            padding:20px;
+            margin-top:20px;
+            border-radius:10px;
+        ">
+            <h3>Firebase Error</h3>
+            <p>${error.message}</p>
+        </div>
+        `
+    );
 
+}
         }
 
 
