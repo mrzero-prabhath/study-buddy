@@ -2,6 +2,11 @@
 <html lang="en">
     <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+  import {
+    getFirestore,
+    collection,
+    getDocs
+  } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDdYTdjchyP1823ik4yBqbo3JYGuaq2ZYE",
@@ -13,6 +18,71 @@
   };
 
   const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  const videoContainer = document.querySelector(".subjects");
+
+  const snapshot = await getDocs(collection(db, "videos"));
+
+  snapshot.forEach((doc) => {
+    const video = doc.data();
+
+    const videoId = getYouTubeVideoId(video.youtubeUrl);
+
+    if (!videoId) return;
+
+    const card = document.createElement("div");
+
+    card.className = "video-card";
+
+    card.innerHTML = `
+      <div style="background:white;padding:15px;border-radius:12px;">
+        <h3>${video.title || "Untitled Video"}</h3>
+        <p>${video.subject || ""} • ${video.chapter || ""}</p>
+
+        <div style="margin-top:15px;">
+          <iframe
+            width="100%"
+            height="300"
+            src="https://www.youtube.com/embed/${videoId}"
+            title="${video.title || "Study Buddy Video"}"
+            frameborder="0"
+            allowfullscreen>
+          </iframe>
+        </div>
+      </div>
+    `;
+
+    videoContainer.appendChild(card);
+  });
+
+  function getYouTubeVideoId(url) {
+    try {
+      const parsed = new URL(url);
+
+      if (parsed.hostname.includes("youtu.be")) {
+        return parsed.pathname.substring(1);
+      }
+
+      if (parsed.hostname.includes("youtube.com")) {
+        if (parsed.pathname === "/watch") {
+          return parsed.searchParams.get("v");
+        }
+
+        if (parsed.pathname.startsWith("/embed/")) {
+          return parsed.pathname.split("/embed/")[1];
+        }
+
+        if (parsed.pathname.startsWith("/shorts/")) {
+          return parsed.pathname.split("/shorts/")[1];
+        }
+      }
+
+      return null;
+    } catch {
+      return null;
+    }
+  }
 </script>
 <head>
     <meta charset="UTF-8">
