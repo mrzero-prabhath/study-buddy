@@ -1,89 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-    <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
-  import {
-    getFirestore,
-    collection,
-    getDocs
-  } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDdYTdjchyP1823ik4yBqbo3JYGuaq2ZYE",
-    authDomain: "study-buddy-49c4a.firebaseapp.com",
-    projectId: "tudy-buddy-49c4a",
-    storageBucket: "study-buddy-49c4a.firebasestorage.app",
-    messagingSenderId: "63673995228",
-    appId: "1:63673995228:web:f6699dc20f4b14d5398919"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  const videoContainer = document.querySelector(".subjects");
-
-  const snapshot = await getDocs(collection(db, "videos"));
-
-  snapshot.forEach((doc) => {
-    const video = doc.data();
-
-    const videoId = getYouTubeVideoId(video.youtubeUrl);
-
-    if (!videoId) return;
-
-    const card = document.createElement("div");
-
-    card.className = "video-card";
-
-    card.innerHTML = `
-      <div style="background:white;padding:15px;border-radius:12px;">
-        <h3>${video.title || "Untitled Video"}</h3>
-        <p>${video.subject || ""} • ${video.chapter || ""}</p>
-
-        <div style="margin-top:15px;">
-          <iframe
-            width="100%"
-            height="300"
-            src="https://www.youtube.com/embed/${videoId}"
-            title="${video.title || "Study Buddy Video"}"
-            frameborder="0"
-            allowfullscreen>
-          </iframe>
-        </div>
-      </div>
-    `;
-
-    videoContainer.appendChild(card);
-  });
-
-  function getYouTubeVideoId(url) {
-    try {
-      const parsed = new URL(url);
-
-      if (parsed.hostname.includes("youtu.be")) {
-        return parsed.pathname.substring(1);
-      }
-
-      if (parsed.hostname.includes("youtube.com")) {
-        if (parsed.pathname === "/watch") {
-          return parsed.searchParams.get("v");
-        }
-
-        if (parsed.pathname.startsWith("/embed/")) {
-          return parsed.pathname.split("/embed/")[1];
-        }
-
-        if (parsed.pathname.startsWith("/shorts/")) {
-          return parsed.pathname.split("/shorts/")[1];
-        }
-      }
-
-      return null;
-    } catch {
-      return null;
-    }
-  }
-</script>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -150,15 +67,15 @@
             border-radius: 12px;
             text-align: center;
             box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-            cursor: pointer;
         }
 
-        .subject:hover {
-            transform: translateY(-3px);
+        .video-card {
+            grid-column: 1 / -1;
         }
 
-        .subject h3 {
-            margin-bottom: 8px;
+        .video-card iframe {
+            width: 100%;
+            border-radius: 10px;
         }
 
         footer {
@@ -185,7 +102,7 @@
             </p>
         </div>
 
-        <div class="subjects">
+        <div class="subjects" id="videoContainer">
 
             <div class="subject">
                 <h3>📐 Combined Maths</h3>
@@ -214,6 +131,228 @@
     <footer>
         Study Buddy © 2026
     </footer>
+
+
+    <!-- Firebase -->
+    <script type="module">
+
+        import { initializeApp }
+            from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+
+        import {
+            getFirestore,
+            collection,
+            getDocs
+        }
+        from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+
+        // Firebase configuration
+        const firebaseConfig = {
+
+            apiKey: "AIzaSyDdYTdjchyP1823ik4yBqbo3JYGuaq2ZYE",
+
+            authDomain: "study-buddy-49c4a.firebaseapp.com",
+
+            projectId: "study-buddy-49c4a",
+
+            storageBucket: "study-buddy-49c4a.firebasestorage.app",
+
+            messagingSenderId: "63673995228",
+
+            appId: "1:63673995228:web:f6699dc20f4b14d5398919"
+
+        };
+
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        const db = getFirestore(app);
+
+
+        // Video container
+        const videoContainer =
+            document.getElementById("videoContainer");
+
+
+        // Load videos from Firestore
+        async function loadVideos() {
+
+            try {
+
+                const snapshot =
+                    await getDocs(collection(db, "videos"));
+
+
+                snapshot.forEach((doc) => {
+
+                    const video = doc.data();
+
+                    const videoId =
+                        getYouTubeVideoId(video.youtubeUrl);
+
+
+                    if (!videoId) {
+                        return;
+                    }
+
+
+                    const card =
+                        document.createElement("div");
+
+                    card.className = "video-card";
+
+
+                    card.innerHTML = `
+
+                        <div style="
+                            background:white;
+                            padding:20px;
+                            border-radius:15px;
+                            box-shadow:0 5px 20px rgba(0,0,0,0.08);
+                        ">
+
+                            <h2>
+                                ${video.title || "Untitled Video"}
+                            </h2>
+
+                            <p style="
+                                margin-top:8px;
+                                color:#666;
+                            ">
+                                ${video.subject || ""}
+                                •
+                                ${video.chapter || ""}
+                            </p>
+
+                            <div style="
+                                margin-top:15px;
+                            ">
+
+                                <iframe
+
+                                    height="400"
+
+                                    src="https://www.youtube.com/embed/${videoId}"
+
+                                    title="${video.title || "Study Buddy Video"}"
+
+                                    frameborder="0"
+
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+
+                                    allowfullscreen>
+
+                                </iframe>
+
+                            </div>
+
+                        </div>
+
+                    `;
+
+
+                    videoContainer.appendChild(card);
+
+                });
+
+
+            } catch (error) {
+
+                console.error(
+                    "Firebase error:",
+                    error
+                );
+
+            }
+
+        }
+
+
+        // Convert YouTube URL → Video ID
+        function getYouTubeVideoId(url) {
+
+            try {
+
+                const parsed =
+                    new URL(url);
+
+
+                // youtu.be/VIDEO_ID
+                if (
+                    parsed.hostname.includes("youtu.be")
+                ) {
+
+                    return parsed.pathname
+                        .substring(1)
+                        .split("/")[0];
+
+                }
+
+
+                // youtube.com
+                if (
+                    parsed.hostname.includes("youtube.com")
+                ) {
+
+                    // youtube.com/watch?v=VIDEO_ID
+                    if (
+                        parsed.pathname === "/watch"
+                    ) {
+
+                        return parsed.searchParams
+                            .get("v");
+
+                    }
+
+
+                    // youtube.com/embed/VIDEO_ID
+                    if (
+                        parsed.pathname.startsWith("/embed/")
+                    ) {
+
+                        return parsed.pathname
+                            .split("/embed/")[1]
+                            .split("/")[0];
+
+                    }
+
+
+                    // youtube.com/shorts/VIDEO_ID
+                    if (
+                        parsed.pathname.startsWith("/shorts/")
+                    ) {
+
+                        return parsed.pathname
+                            .split("/shorts/")[1]
+                            .split("/")[0];
+
+                    }
+
+                }
+
+
+                return null;
+
+            } catch (error) {
+
+                console.error(
+                    "Invalid YouTube URL:",
+                    url
+                );
+
+                return null;
+
+            }
+
+        }
+
+
+        // Start loading
+        loadVideos();
+
+    </script>
 
 </body>
 </html>
